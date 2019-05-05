@@ -16,6 +16,12 @@ public class LocationDatabaseHelper extends SQLiteOpenHelper {
                                     "lon REAL,"+
                                     "lat REAL)";
 
+    public static final String CREATE_REAL_LOCATION =
+            "create table RealLocation (" +
+                                    "id INTEGER primary key autoincrement,"+
+                                    "lon REAL,"+
+                                    "lat REAL)";
+
     private Context context;
 
     public LocationDatabaseHelper(@Nullable Context context, @Nullable String name, @Nullable SQLiteDatabase.CursorFactory factory, int version) {
@@ -26,6 +32,7 @@ public class LocationDatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(CREATE_LOCATION);
+        db.execSQL(CREATE_REAL_LOCATION);
         Toast.makeText(context,"Create Successed",Toast.LENGTH_SHORT).show();
     }
 

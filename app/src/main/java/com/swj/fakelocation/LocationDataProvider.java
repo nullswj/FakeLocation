@@ -12,6 +12,10 @@ public class LocationDataProvider extends ContentProvider {
 
     public static final int Local_ITEM = 1;
 
+    public static final int real_Local_DIR = 2;
+
+    public static final int real_Local_ITEM = 3;
+
     public static final String AUTHORITY = "com.swj.fakelocation.provider";
 
     private static UriMatcher matcher ;
@@ -23,6 +27,8 @@ public class LocationDataProvider extends ContentProvider {
         matcher = new UriMatcher(UriMatcher.NO_MATCH);
         matcher.addURI(AUTHORITY,"Location",Local_DIR);
         matcher.addURI(AUTHORITY,"Location/#",Local_ITEM);
+        matcher.addURI(AUTHORITY,"RealLocation",real_Local_DIR);
+        matcher.addURI(AUTHORITY,"RealLocation/#",real_Local_ITEM);
     }
 
     public LocationDataProvider() {
@@ -42,6 +48,10 @@ public class LocationDataProvider extends ContentProvider {
                 return "vnd.android.cursor.dir/vnd."+AUTHORITY+"Location";
             case Local_ITEM:
                 return "vnd.android.cursor.item/vnd."+AUTHORITY+"Location";
+            case real_Local_DIR:
+                return "vnd.android.cursor.dir/vnd."+AUTHORITY+"RealLocation";
+            case real_Local_ITEM:
+                return "vnd.android.cursor.item/vnd."+AUTHORITY+"RealLocation";
             default:
                 break;
         }
@@ -55,10 +65,15 @@ public class LocationDataProvider extends ContentProvider {
         switch (matcher.match(uri))
         {
             case Local_DIR:
-
             case Local_ITEM:
                 long newLocationID = db.insert("Location",null,values);
                 uriReturn = uri.parse("content://" + AUTHORITY + "/Location/" + newLocationID);
+                break;
+
+            case real_Local_DIR:
+            case real_Local_ITEM:
+                long newrealLocationID = db.insert("RealLocation",null,values);
+                uriReturn = uri.parse("content://" + AUTHORITY + "/RealLocation/" + newrealLocationID);
                 break;
         }
         return uriReturn;
@@ -85,6 +100,16 @@ public class LocationDataProvider extends ContentProvider {
                 String lat_Name = "lat";
                 String lon_Name = "lon";
                 cursor = db.query("Location",new String[]{lat_Name,lon_Name},"id = ?",new String[]{lat_ID},null,null,sortOrder);
+                break;
+
+            case real_Local_DIR:
+                cursor = db.query("RealLocation",projection,selection,selectionArgs,null,null,sortOrder);
+                break;
+            case real_Local_ITEM:
+                String real_lat_ID = "1";
+                String real_lat_Name = "lat";
+                String real_lon_Name = "lon";
+                cursor = db.query("RealLocation",new String[]{real_lat_Name,real_lon_Name},"id = ?",new String[]{real_lat_ID},null,null,sortOrder);
                 break;
             default:
                 break;

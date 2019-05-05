@@ -5,7 +5,6 @@ import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
@@ -17,12 +16,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,39 +28,30 @@ import com.baidu.location.BDLocation;
 import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import static com.swj.fakelocation.FakeLocationApplication.realuri;
+import static com.swj.fakelocation.FakeLocationApplication.uri;
+
 
 public  class MainActivity extends AppCompatActivity implements View.OnClickListener{
 
-    String TAG = "MainActivity";
+    private static final String TAG = "MainActivity";
 
-    FloatingActionButton btn_start;
+    private FloatingActionButton btn_start;
 
-    FloatingActionButton btn_stop;
+    private FloatingActionButton btn_stop;
 
-    public static double latitude;
+    private static double fake_lat;
 
-    public static double longtitude;
+    private static double fake_lon;
 
-    private double fake_lat;
 
-    private double fake_lon;
-
-    WebView map;
-
-    private static double x_pi = 3.14159265358979324 * 3000.0 / 180.0;
-
-    private static final String AUTHORITY = "com.swj.fakelocation.provider";
-
-    private static final Uri uri = Uri.parse("content://"+AUTHORITY+"/Location");
+    private WebView map;
 
     public LocationClient locationClient = null;
 
@@ -78,35 +66,22 @@ public  class MainActivity extends AppCompatActivity implements View.OnClickList
     private TextView text_log = null;
 
     @SuppressLint("HandlerLeak")
-    public MainActivity() {
-        ServerHandler = new Handler()
-        {
-            @Override
-            public void handleMessage(Message msg) {
-                super.handleMessage(msg);
+    public Handler handler = new Handler()
+    {
+        @Override
+        public void handleMessage(Message msg) {
 
-                if(msg.what == 0)
-                {
-                    GpsLocation ServerLoc = (GpsLocation) msg.obj;
-                    values.put("lat",ServerLoc.lat);
-                    values.put("lon",ServerLoc.lon);
-                    getContentResolver().insert(uri,values);
-                    Log.e(TAG, "real_dire_handle_success");
-                }
-            }
-        };
-        handler = new Handler()
-        {
-            @Override
-            public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            String Url = "https://apis.map.qq.com/tools/locpicker?type=0&backurl=https://callback&coordtype=5&coord="+FakeLocationApplication.getLatitude()
+                    +"," +FakeLocationApplication.getLongtitude()+"&radius=2000&total=20&key=FAGBZ-66IWV-L4KPW-UODMT-3WUQZ-B6FMX&referer=fakelocation";
+            map.loadUrl(Url);
 
-                super.handleMessage(msg);
-                String Url = "https://apis.map.qq.com/tools/locpicker?type=0&backurl=https://callback&coordtype=5&coord="+latitude+","+longtitude+"&radius=2000&total=20&key=FAGBZ-66IWV-L4KPW-UODMT-3WUQZ-B6FMX&referer=fakelocation";
-                map.loadUrl(Url);
-            }
+            values.put("lat",FakeLocationApplication.getLatitude());
+            values.put("lon",FakeLocationApplication.getLongtitude());
+            getContentResolver().insert(realuri,values);
+        }
 
-        };
-    }
+    };
 
 
     @SuppressLint("RestrictedApi")
@@ -134,31 +109,9 @@ public  class MainActivity extends AppCompatActivity implements View.OnClickList
                 break;
 
             case R.id.connect:
-                getMainsocket.connMainsocket(TAG,ServerHandler);
-//                if(getMainsocket.connMainsocket(TAG,ServerHandler) == -1)
-//                {
-//
-//                }
-//                else if(getMainsocket.connMainsocket(TAG,ServerHandler) == 0)
-//                {
-//
-//                }
-//                else if(getMainsocket.connMainsocket(TAG,ServerHandler) == 1)
-//                {
-//
-//                }
-//                else if(getMainsocket.connMainsocket(TAG,ServerHandler) == 2)
-//                {
-//
-//                }
-//                else if(getMainsocket.connMainsocket(TAG,ServerHandler) == 3)
-//                {
-//
-//                }
-//                else if(getMainsocket.connMainsocket(TAG,ServerHandler) == 4)
-//                {
-//
-//                }
+                //Log.e(TAG, "ConnectonClick: " );
+                //Log.e(TAG, getDireJson().toString() );
+                //getMainsocket.connMainsocket(TAG,ServerHandler);
                 break;
         }
     }
@@ -168,10 +121,10 @@ public  class MainActivity extends AppCompatActivity implements View.OnClickList
 
         @Override
         public void onReceiveLocation(BDLocation bdLocation) {
-            latitude = bdLocation.getLatitude();
-            longtitude = bdLocation.getLongitude();
 
-            //bd09TOgcj02();
+            FakeLocationApplication.setLatitude(bdLocation.getLatitude());
+            FakeLocationApplication.setLongtitude(bdLocation.getLongitude());
+
         }
     }
 
@@ -207,6 +160,8 @@ public  class MainActivity extends AppCompatActivity implements View.OnClickList
         settings.setJavaScriptCanOpenWindowsAutomatically(true);
         settings.setMinimumFontSize(settings.getMinimumFontSize() + 8);
         settings.setAllowFileAccess(false);
+        settings.setDomStorageEnabled(true);
+        settings.setJavaScriptEnabled(true);
         map.setWebViewClient(new WebViewClient()
         {
             @Override
@@ -258,11 +213,17 @@ public  class MainActivity extends AppCompatActivity implements View.OnClickList
         {
             permissionList.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
         }
+        if (ContextCompat.checkSelfPermission(MainActivity.this,Manifest.permission.READ_CONTACTS)
+                !=PackageManager.PERMISSION_GRANTED)
+        {
+            permissionList.add(Manifest.permission.READ_CONTACTS);
+        }
         if (!permissionList.isEmpty())
         {
             String [] permissions = permissionList.toArray(new String[permissionList.size()]);
             ActivityCompat.requestPermissions(MainActivity.this, permissions, 1);
         }
+
         else
         {
             //开始执行
@@ -284,16 +245,10 @@ public  class MainActivity extends AppCompatActivity implements View.OnClickList
             }
         }).start();
 
+
+
         }
 
-    private void bd09TOgcj02()
-    {
-        double x = longtitude - 0.0065, y = latitude - 0.006;
-        double z = Math.sqrt(x * x + y * y) - 0.00002 * Math.sin(y * x_pi);
-        double theta = Math.atan2(y, x) - 0.000003 * Math.cos(x * x_pi);
-        longtitude = z * Math.cos(theta);
-        latitude = z * Math.sin(theta);
-    }
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
     {
@@ -301,6 +256,7 @@ public  class MainActivity extends AppCompatActivity implements View.OnClickList
         switch (requestCode) //利用分支语句进行判断
         {
             case 1:
+                boolean flag = true;
                 if (grantResults.length > 0)
                 {
                     for (int result : grantResults)  //在grantResult中提取数据
@@ -308,13 +264,17 @@ public  class MainActivity extends AppCompatActivity implements View.OnClickList
                         if (result != PackageManager.PERMISSION_GRANTED)
                         {
                             Toast.makeText(this, "必须同意所有权限才能使用本程序", Toast.LENGTH_SHORT).show();
-                            finish();
-                            return;
+                            flag = false;
+                            break;
                         }
                     }
                     //开始执行
-                    setLocation();
-                    locationClient.start();
+                    if(flag == true)
+                    {
+                        setLocation();
+                        locationClient.start();
+                    }
+
                 }
                 else
                 {
@@ -327,24 +287,13 @@ public  class MainActivity extends AppCompatActivity implements View.OnClickList
 
     }
 
-    @SuppressLint("HandlerLeak")
-    public Handler handler;
 
-    @SuppressLint("HandlerLeak")
-    public Handler ServerHandler;
+
+
 
     @Override
     protected void onResume() {
         super.onResume();
-//        Cursor cursor = getContentResolver().query(uri,null,null,null,null);
-//        if(cursor != null && cursor.moveToLast())
-//        {
-//            double lat = cursor.getDouble(cursor.getColumnIndex("lat"));
-//            double lon = cursor.getDouble(cursor.getColumnIndex("lon"));
-//
-//            edit_lat.setText(""+lat);
-//            edit_lon.setText(""+lon);
-//        }
     }
 
     @Override
@@ -362,5 +311,10 @@ public  class MainActivity extends AppCompatActivity implements View.OnClickList
             AllLog = AllLog + log +"\n\n";
         }
         text_log.setText(AllLog);
+    }
+
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        super.attachBaseContext(newBase);
     }
 }

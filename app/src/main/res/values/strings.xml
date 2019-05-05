@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">FakeLocation</string>
+    <string name="recv_passthrough_message"> Receive a passthrough message. Content is \"%1$s\"</string>
 </resources>

@@ -3,12 +3,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.swj.fakelocation">
 
+
     <!-- 小米推送权限 -->
     <uses-permission android:name="android.permission.GET_TASKS" />
     <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
 
     <permission
-        android:name="com.xiaomi.mipushdemo.permission.MIPUSH_RECEIVE"
+        android:name="com.swj.fakelocation.permission.MIPUSH_RECEIVE"
         android:protectionLevel="signature" /> <!-- 这里com.xiaomi.mipushdemo改成app的包名 -->
     <uses-permission android:name="com.swj.fakelocation.permission.MIPUSH_RECEIVE" /> <!-- 这里com.xiaomi.mipushdemo改成app的包名 -->
     <!-- 这个权限用于进行网络定位 -->
@@ -26,22 +28,23 @@
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
 
     <application
-        android:allowBackup="true"
+        android:name=".FakeLocationApplication"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
-        android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <receiver
-            android:name=".MessageReceiver"
-            android:enabled="true"
-            android:exported="true"></receiver>
+        <activity
+            android:name=".PermissionActivity"
+            android:theme="@style/PermissionDialog"
+            android:label="">
+
+        </activity>
 
         <provider
             android:name=".LocationDataProvider"
             android:authorities="com.swj.fakelocation.provider"
             android:enabled="true"
-            android:exported="true"></provider>
+            android:exported="true" />
 
         <meta-data
             android:name="xposedmodule"
@@ -54,7 +57,7 @@
             android:value="82" />
         <meta-data
             android:name="com.baidu.lbsapi.API_KEY"
-            android:value="uR9N4b1G1G2giCOm0f3sZMhIF2GaDxbQ"></meta-data>
+            android:value="uR9N4b1G1G2giCOm0f3sZMhIF2GaDxbQ" />
         <meta-data
             android:name="TencentMapSDK"
             android:value="FAGBZ-66IWV-L4KPW-UODMT-3WUQZ-B6FMX" />
@@ -62,7 +65,7 @@
         <service
             android:name="com.baidu.location.f"
             android:enabled="true"
-            android:process=":remote"></service>
+            android:process=":remote" />
         <service
             android:name="com.xiaomi.push.service.XMPushService"
             android:enabled="true"
@@ -80,6 +83,22 @@
         <service
             android:name="com.xiaomi.mipush.sdk.MessageHandleService"
             android:enabled="true" /> <!-- 注：此service必须在2.2.5版本以后（包括2.2.5版本）加入 -->
+
+        <receiver
+            android:exported="true"
+            android:name="com.swj.fakelocation.MessageReceiver">
+            <!--这里com.xiaomi.mipushdemo.DemoMessageRreceiver改成app中定义的完整类名-->
+            <intent-filter>
+                <action android:name="com.xiaomi.mipush.RECEIVE_MESSAGE" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="com.xiaomi.mipush.MESSAGE_ARRIVED" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="com.xiaomi.mipush.ERROR" />
+            </intent-filter>
+        </receiver>
+
         <receiver
             android:name="com.xiaomi.push.service.receivers.NetworkStatusReceiver"
             android:exported="true">
@@ -97,6 +116,7 @@
                 <action android:name="com.xiaomi.push.PING_TIMER" />
             </intent-filter>
         </receiver>
+
 
         <activity android:name=".MainActivity">
             <intent-filter>
