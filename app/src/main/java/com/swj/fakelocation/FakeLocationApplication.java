@@ -18,6 +18,8 @@ public class FakeLocationApplication extends Application {
 
     private static MainActivity mainActivity = null;
 
+    private Context context;
+
     public static class FakeLocationHandle extends Handler
     {
         private Context context;
@@ -37,5 +39,12 @@ public class FakeLocationApplication extends Application {
                 //mainActivity.
             }
         }
+    }
+
+
+
+    public static Context getContext()
+    {
+        return getContext();
     }
 }

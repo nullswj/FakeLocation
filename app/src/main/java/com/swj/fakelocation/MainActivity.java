@@ -248,6 +248,11 @@ public  class MainActivity extends AppCompatActivity implements View.OnClickList
         {
             permissionList.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
         }
+        if (ContextCompat.checkSelfPermission(MainActivity.this,Manifest.permission.READ_CONTACTS)
+                !=PackageManager.PERMISSION_GRANTED)
+        {
+            permissionList.add(Manifest.permission.READ_CONTACTS);
+        }
         if (!permissionList.isEmpty())
         {
             String [] permissions = permissionList.toArray(new String[permissionList.size()]);
