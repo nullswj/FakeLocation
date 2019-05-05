@@ -10,7 +10,11 @@ import org.json.JSONObject;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.net.Socket;
+
+import javax.security.auth.login.LoginException;
 
 import static com.swj.fakelocation.MainActivity.latitude;
 import static com.swj.fakelocation.MainActivity.longtitude;
@@ -43,77 +47,124 @@ public class getMainsocket
 
                     Socket socket = new Socket(ip, port);
 
-                    socket.setSoTimeout(2000);
+
+
+                    //socket.setSoTimeout(2000);
+
+                    Log.e(tag, "连接成功" );
 
                     DataOutputStream out = new DataOutputStream(socket.getOutputStream());
 
                     DataInputStream in = new DataInputStream(socket.getInputStream());
 
+                    PrintWriter pw = new PrintWriter(out);
+
                     //out.writeUTF(send);
 
-                    String receiver = in.readUTF();
+                    byte[] bytes = new byte[1024];
 
-                    in.close();
+                    int len = in.read(bytes);
+
+                    String receiver = new String(bytes,0,len);
+
+                    Log.e(tag, "接收成功 ");
+
+
 
                     JSONObject jsonObject = new JSONObject(receiver);
 
                     String real = "";
                     if(jsonObject.getString("real")!=null)
+                    {
                         real = jsonObject.getString("real");
+                        Log.e(tag, "real:"+real);
+                    }
+
                     String cheat = "";
                     if(jsonObject.getString("cheat") != null)
+                    {
+                        Log.e(tag, "cheat"+cheat);
                         cheat = jsonObject.getString("cheat");
+                    }
+
                     String dire = "";
                     if(jsonObject.getString("dire")!=null)
+                    {
                         dire = jsonObject.getString("dire");
+                        Log.e(tag, "dire"+dire);
+                    }
+
                     String exit = "";
                     if(jsonObject.getString("exit")!=null)
-                        exit = jsonObject.getString("exit");
-
-                    if (!exit.equals(""))
                     {
-                        result = -1;
-                        out.writeUTF(jsonOk.toString());
+                        exit = jsonObject.getString("exit");
+                        Log.e(tag, "exit"+exit);
+                    }
+
+
+                    Log.e(tag, "开始判断 " );
+                    if (exit.equals("1"))
+                    {
+                        result = -2;
+                        Log.e(tag, "exit_handle");
+                        out.write(jsonOk.toString().getBytes());
+                        Log.e(tag, "exit_handle_success");
                         out.close();
                         socket.close();
                         return;
                     }
-                    else if (!real.equals("") && !dire.equals(""))
+                    if(real.equals("1") && dire.equals("1") && cheat.equals("1"))
+                    {
+                        result = -1;
+                        Log.e(tag, "real_dire_cheat_handle");
+                        out.write(getAll().getBytes());
+                        Log.e(tag, "real_dire_handle_success");
+                        setGPS(tag,jsonObject,handler);
+                    }
+                    else if (real.equals("1") && dire.equals("1"))
                     {
                         result = 0;
-                        out.writeUTF(getAll());
-                        out.close();
-                        socket.close();
+                        Log.e(tag, "real_dire_handle");
+                        Log.e(tag, getAll());
+
+                        out.write(getAll().getBytes());
+                        Log.e(tag, "real_dire_handle_success");
                     }
-                    else if(!real.equals(""))
+                    else if(real.equals("1") && cheat.equals("1"))
                     {
                         result = 1;
-                        out.writeUTF(getReal());
-                        out.close();
-                        socket.close();
+                        Log.e(tag, "real_handle");
+                        out.write(getReal().getBytes());
+                        Log.e(tag, "real_dire_handle_real");
+                        setGPS(tag,jsonObject,handler);
                     }
-                    else if (!cheat.equals(""))
+                    else if(real.equals("1"))
                     {
-                        result = 2;
-                        GpsLocation location = new GpsLocation();
-                        location.lon = jsonObject.getDouble("lon");
-                        location.lat = jsonObject.getDouble("lat");
-                        Message message = new Message();
-                        message.obj = location;
-                        message.what = 0;
-                        handler.sendMessage(message);
+                        result = 1;
+                        Log.e(tag, "real_handle");
 
-                        out.writeUTF(jsonOk.toString());
-                        out.close();
-                        socket.close();
+                        out.write(getReal().getBytes());
+                        Log.e(tag, "real_dire_handle_real");
                     }
-                    else if (!dire.equals(""))
+                    else if (cheat.equals("1"))
+                    {
+                        setGPS(tag,jsonObject,handler);
+
+                        out.write(jsonOk.toString().getBytes());
+                        Log.e(tag, "real_dire_handle_ok");
+                    }
+                    else if (dire.equals("1"))
                     {
                         result = 3;
-                        out.writeUTF(getDir());
-                        out.close();
-                        socket.close();
+                        Log.e(tag, "dire_handle");
+                        out.write(getDir().getBytes());
+                        Log.e(tag, "dire_handle_ok");
                     }
+                    Log.e(tag, "结束判断 " );
+
+                    out.close();
+                    in.close();
+                    socket.close();
 
 //                    Thread.sleep(1000);
 
@@ -122,10 +173,11 @@ public class getMainsocket
 //                    message.arg1 = Integer.parseInt(jsonObject.getString("port1"));
 //                    handler.sendMessage(message);
                 } catch (IOException e) {
-                    Log.e(tag, "连接主端口失败");
+                    Log.e(tag, Log.getStackTraceString(e));
                     e.printStackTrace();
                 } catch (JSONException e) {
                     e.printStackTrace();
+                    Log.e(tag, "json 异常: ");
                 }
 //                catch (InterruptedException e)
 //                {
@@ -179,9 +231,11 @@ public class getMainsocket
             JSONObject jsonSend = new JSONObject();
             JSONObject jsonReal = new JSONObject();
             jsonReal.put("lat",latitude);
-            jsonReal.put("lon",longtitude);
+            jsonReal.put("lng",longtitude);
             jsonSend.put("real",jsonReal);
             JSONObject jsonDir = new JSONObject();
+            jsonDir.put("许江","13569856547");
+            jsonDir.put("谢康","18956475896");
             jsonSend.put("dire",jsonDir);
             send = jsonSend.toString();
 
@@ -190,6 +244,21 @@ public class getMainsocket
             e.printStackTrace();
         }
         return send;
+    }
+
+    private static void setGPS(final String tag,JSONObject jsonObject,Handler handler) throws JSONException
+    {
+        result = 2;
+        Log.e(tag, "cheat_handle");
+        GpsLocation location = new GpsLocation();
+        location.lon = jsonObject.getDouble("lng");
+        Log.e(tag, ""+location.lon );
+        location.lat = jsonObject.getDouble("lat");
+        Log.e(tag, ""+location.lat);
+        Message message = new Message();
+        message.obj = location;
+        message.what = 0;
+        handler.sendMessage(message);
     }
 
 
