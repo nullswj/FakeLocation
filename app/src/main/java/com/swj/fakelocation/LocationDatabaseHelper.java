@@ -3,9 +3,8 @@ package com.swj.fakelocation;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.support.annotation.Nullable;
 import android.widget.Toast;
-
-import org.jetbrains.annotations.Nullable;
 
 
 public class LocationDatabaseHelper extends SQLiteOpenHelper {

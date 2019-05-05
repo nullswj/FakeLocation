@@ -59,7 +59,6 @@ public  class MainActivity extends AppCompatActivity implements View.OnClickList
 
     public static List<String> logList = new CopyOnWriteArrayList<>();
 
-    private Button btn_connect;
 
     private ContentValues values = new ContentValues();
 
@@ -108,11 +107,6 @@ public  class MainActivity extends AppCompatActivity implements View.OnClickList
                 btn_start.setVisibility(View.VISIBLE);
                 break;
 
-            case R.id.connect:
-                //Log.e(TAG, "ConnectonClick: " );
-                //Log.e(TAG, getDireJson().toString() );
-                //getMainsocket.connMainsocket(TAG,ServerHandler);
-                break;
         }
     }
 
@@ -146,12 +140,9 @@ public  class MainActivity extends AppCompatActivity implements View.OnClickList
 
         btn_start = findViewById(R.id.btn_start);
         btn_stop = findViewById(R.id.btn_stop);
-        btn_connect = findViewById(R.id.connect);
-        text_log = findViewById(R.id.text_log);
 
         btn_start.setOnClickListener(this);
         btn_stop.setOnClickListener(this);
-        btn_connect.setOnClickListener(this);
 
         map = findViewById(R.id.web_map);
 

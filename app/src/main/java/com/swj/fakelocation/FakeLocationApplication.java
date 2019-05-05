@@ -2,6 +2,7 @@ package com.swj.fakelocation;
 
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
+
 import android.app.Application;
 import android.content.ContentValues;
 import android.content.Context;
@@ -51,6 +52,10 @@ public class FakeLocationApplication extends Application {
     private static double longtitude;
 
 
+    public static void setMainActivity(MainActivity activity)
+    {
+        mainActivity = activity;
+    }
     public static void setLatitude(double lat)
     {
         latitude = lat;
@@ -125,7 +130,7 @@ public class FakeLocationApplication extends Application {
             }
             if(!TextUtils.isEmpty(s))
             {
-                Toast.makeText(context,s,Toast.LENGTH_SHORT).show();
+                Toast.makeText(context,s, Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -205,13 +210,4 @@ public class FakeLocationApplication extends Application {
         MiPushClient.unsubscribe(ctx.getApplicationContext(), "fake", null);
     }
 
-    public static FakeLocationHandle getHandle()
-    {
-        return handle;
-    }
-
-    public static void setMainActivity(MainActivity activity)
-    {
-        mainActivity = activity;
-    }
 }
