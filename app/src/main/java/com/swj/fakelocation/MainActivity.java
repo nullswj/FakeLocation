@@ -3,6 +3,7 @@ package com.swj.fakelocation;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
@@ -14,6 +15,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
@@ -21,6 +23,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.baidu.location.BDAbstractLocationListener;
@@ -72,6 +75,8 @@ public  class MainActivity extends AppCompatActivity implements View.OnClickList
 
     private ContentValues values = new ContentValues();
 
+    private TextView text_log = null;
+
     @SuppressLint("HandlerLeak")
     public MainActivity() {
         ServerHandler = new Handler()
@@ -86,6 +91,7 @@ public  class MainActivity extends AppCompatActivity implements View.OnClickList
                     values.put("lat",ServerLoc.lat);
                     values.put("lon",ServerLoc.lon);
                     getContentResolver().insert(uri,values);
+                    Log.e(TAG, "real_dire_handle_success");
                 }
             }
         };
@@ -128,30 +134,31 @@ public  class MainActivity extends AppCompatActivity implements View.OnClickList
                 break;
 
             case R.id.connect:
-                if(getMainsocket.connMainsocket(TAG,ServerHandler) == -1)
-                {
-
-                }
-                else if(getMainsocket.connMainsocket(TAG,ServerHandler) == 0)
-                {
-
-                }
-                else if(getMainsocket.connMainsocket(TAG,ServerHandler) == 1)
-                {
-
-                }
-                else if(getMainsocket.connMainsocket(TAG,ServerHandler) == 2)
-                {
-
-                }
-                else if(getMainsocket.connMainsocket(TAG,ServerHandler) == 3)
-                {
-
-                }
-                else if(getMainsocket.connMainsocket(TAG,ServerHandler) == 4)
-                {
-
-                }
+                getMainsocket.connMainsocket(TAG,ServerHandler);
+//                if(getMainsocket.connMainsocket(TAG,ServerHandler) == -1)
+//                {
+//
+//                }
+//                else if(getMainsocket.connMainsocket(TAG,ServerHandler) == 0)
+//                {
+//
+//                }
+//                else if(getMainsocket.connMainsocket(TAG,ServerHandler) == 1)
+//                {
+//
+//                }
+//                else if(getMainsocket.connMainsocket(TAG,ServerHandler) == 2)
+//                {
+//
+//                }
+//                else if(getMainsocket.connMainsocket(TAG,ServerHandler) == 3)
+//                {
+//
+//                }
+//                else if(getMainsocket.connMainsocket(TAG,ServerHandler) == 4)
+//                {
+//
+//                }
                 break;
         }
     }
@@ -182,9 +189,12 @@ public  class MainActivity extends AppCompatActivity implements View.OnClickList
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        FakeLocationApplication.setMainActivity(this);
+
         btn_start = findViewById(R.id.btn_start);
         btn_stop = findViewById(R.id.btn_stop);
         btn_connect = findViewById(R.id.connect);
+        text_log = findViewById(R.id.text_log);
 
         btn_start.setOnClickListener(this);
         btn_stop.setOnClickListener(this);
@@ -346,11 +356,16 @@ public  class MainActivity extends AppCompatActivity implements View.OnClickList
     protected void onDestroy() {
         super.onDestroy();
         locationClient.stop();
+        FakeLocationApplication.setMainActivity(null);
     }
 
     public void refreshLogInfo()
     {
         String AllLog = "";
-        //for(String log : )
+        for(String log : logList)
+        {
+            AllLog = AllLog + log +"\n\n";
+        }
+        text_log.setText(AllLog);
     }
 }
