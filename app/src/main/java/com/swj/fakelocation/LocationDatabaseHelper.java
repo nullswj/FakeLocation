@@ -5,8 +5,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.widget.Toast;
 
-import org.jetbrains.annotations.Nullable;
-
+import androidx.annotation.Nullable;
 
 public class LocationDatabaseHelper extends SQLiteOpenHelper {
 
